@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "scripts": {
+    "generate": "node run.js generate",
+    "build": "node run.js build"
+  }
+}
