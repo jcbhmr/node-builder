@@ -13,3 +13,5 @@ npm run build
 ```
 
 right now some files are in Releases folder in Git so that when I start a new Codespace I don't have to wait 2 hours for it to fresh build lol
+
+used libuv.a from https://github.com/BrainCoTech/libuv-prebuild/releases/tag/v1.44.2 for linux x86_64
