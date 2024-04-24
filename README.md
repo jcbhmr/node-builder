@@ -1,5 +1,6 @@
 # node-builder
-🐢 Node.js compiled library &amp; binary artifacts released on GitHub
+
+GOAL: release a libnode.a and associate *.h files via github releases so that downstream embedders can just wget or curl or download the compiled .a files and use those instead of waiting for node to build for 2 hours lol
 
 ## Development
 
