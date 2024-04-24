@@ -1,7 +1,14 @@
 {
   "type": "module",
   "scripts": {
-    "generate": "node run.js generate",
-    "build": "node run.js build"
+    "setup": "node scripts.js setup",
+    "generate": "node scripts.js generate",
+    "build": "node scripts.js build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "execa": "^8.0.1",
+    "typescript": "^5.4.5",
+    "which": "^4.0.0"
   }
 }
