@@ -49,7 +49,7 @@ jobs:
           name: node-${{ matrix.name }}
           path: out/Release
 
-  build-macos:
+  build-darwin:
     strategy:
       fail-fast: true
       matrix:
@@ -69,7 +69,7 @@ jobs:
           name: node-${{ matrix.name }}
           path: out/Release
 
-  build-win32:
+  build-win32-x64:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
