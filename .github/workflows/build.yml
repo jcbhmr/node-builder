@@ -22,8 +22,8 @@ jobs:
           - { os: ubuntu-22.04, name: linux-x64 }
           - { os: ubuntu-22.04-arm, name: linux-arm64 }
           - { os: macos-13, name: darwin-x64 }
-          - { os: macos-latest, name: darwin-arm64 }
-          - { os: windows-latest, name: win32-x64 }
+          - { os: macos-14, name: darwin-arm64 }
+          - { os: windows-2022, name: win32-x64 }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -31,17 +31,13 @@ jobs:
           repository: nodejs/node
           ref: v${{ needs.node-version.outputs.node-version }}
       - if: runner.os == 'Windows'
+        uses: ilammy/setup-nasm@v1
+      - if: runner.os == 'Windows'
         run: ./vcbuild.bat dll
       - if: runner.os == 'macOS'
-        run: |
-          ./configure --shared
-          make -j$(sysctl -n hw.logicalcpu)
-          (cd ./out/Release/ && ln libnode.* libnode.dylib)
+        run: ./configure --shared && make -j$(sysctl -n hw.logicalcpu)
       - if: runner.os == 'Linux'
-        run: |
-          ./configure --shared
-          make -j$(nproc)
-          (cd ./out/Release/ && ln libnode.so.* libnode.so)
+        run: ./configure --shared && make -j$(nproc)
       - uses: actions/upload-artifact@v4
         with:
           name: node-v${{ needs.node-version.outputs.node-version }}-${{ matrix.name }}
