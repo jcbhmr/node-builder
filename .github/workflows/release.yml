@@ -9,7 +9,8 @@ jobs:
     uses: ./.github/workflows/build.yml
   version:
     outputs:
-      node-version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.prerelease }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,6 +18,11 @@ jobs:
         run: |
           version=$(cat VERSION)
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [[ $(echo "$version") == $(echo "$version" | grep -Po '\d+\.\d+\.\d+') ]]; then
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          fi
   release:
     needs: version
     runs-on: ubuntu-latest
@@ -43,4 +49,4 @@ jobs:
       - run: zip -r ./node-win32-x64.zip ./node-win32-x64 && rm -rf ./node-win32-x64
       - env:
           version: ${{ needs.version.outputs.version }}
-        run: gh release create "v$version" --generate-notes ${{ inputs.draft && '--draft' || '' }} ./node-linux-x64.tar.gz ./node-linux-arm64.tar.gz ./node-darwin-x64.tar.gz ./node-darwin-arm64.tar.gz ./node-win32-x64.zip
+        run: gh release create "v$version" --generate-notes ${{ needs.version.outputs.prerelease && '--prerelease' || '' }} ${{ inputs.draft && '--draft' || '' }} ./node-linux-x64.tar.gz ./node-linux-arm64.tar.gz ./node-darwin-x64.tar.gz ./node-darwin-arm64.tar.gz ./node-win32-x64.zip
