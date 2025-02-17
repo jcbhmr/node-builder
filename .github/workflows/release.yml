@@ -1,0 +1,46 @@
+name: Create release
+on:
+  workflow_dispatch:
+    inputs:
+      draft:
+        type: boolean
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+  version:
+    outputs:
+      node-version: ${{ steps.version.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          version=$(cat VERSION)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+  release:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-linux-x64
+      - run: tar czf ./node-linux-x64.tar.gz ./node-linux-x64 && rm -rf ./node-linux-x64
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-linux-arm64
+      - run: tar czf ./node-linux-arm64.tar.gz ./node-linux-arm64 && rm -rf ./node-linux-arm64
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-darwin-x64
+      - run: tar czf ./node-darwin-x64.tar.gz ./node-darwin-x64 && rm -rf ./node-darwin-x64
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-darwin-arm64
+      - run: tar czf ./node-darwin-arm64.tar.gz ./node-darwin-arm64 && rm -rf ./node-darwin-arm64
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-win32-x64
+      - run: zip -r ./node-win32-x64.zip ./node-win32-x64 && rm -rf ./node-win32-x64
+      - env:
+          version: ${{ needs.version.outputs.version }}
+        run: gh release create "v$version" --generate-notes ${{ inputs.draft && '--draft' || '' }} ./node-linux-x64.tar.gz ./node-linux-arm64.tar.gz ./node-darwin-x64.tar.gz ./node-darwin-arm64.tar.gz ./node-win32-x64.zip
