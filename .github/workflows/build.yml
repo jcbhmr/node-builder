@@ -28,18 +28,29 @@ jobs:
           - { os: macos-latest, name: darwin-arm64 }
           - { os: windows-latest, name: win32-x64 }
     runs-on: ${{ matrix.os }}
+    env:
+      node_version: ${{ needs.node-version.outputs.node-version }}
     steps:
       - uses: actions/checkout@v4
         with:
           repository: nodejs/node
-          ref: v${{ needs.node-version.outputs.node-version }}
+          ref: v${{ env.node_version }}
       - if: runner.os == 'Windows'
         run: ./vcbuild.bat dll
       - if: runner.os == 'macOS'
-        run: ./configure --shared && make -j$(sysctl -n hw.logicalcpu)
+        run: |
+          ./configure --shared
+          make -j$(sysctl -n hw.logicalcpu)
+          (cd ./out/Release/ && ln libnode.* libnode.dylib)
       - if: runner.os == 'Linux'
-        run: ./configure --shared && make -j$(nproc)
+        run: |
+          ./configure --shared
+          make -j$(nproc)
+          (cd ./out/Release/ && ln libnode.so.* libnode.so)
       - uses: actions/upload-artifact@v4
         with:
-          name: node-${{ matrix.name }}
-          path: out/Release
+          name: node-v${{ env.node_version }}-${{ matrix.name }}
+          path: |
+            out/Release/libnode.*
+            out/Release/node.*
+            out/Release/node
