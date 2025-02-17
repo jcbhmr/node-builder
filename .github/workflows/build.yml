@@ -19,8 +19,8 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { os: ubuntu-22.04, name: linux-x64 }
-          - { os: ubuntu-22.04-arm, name: linux-arm64 }
+          - { os: ubuntu-24.04, name: linux-x64 }
+          - { os: ubuntu-24.04-arm, name: linux-arm64 }
           - { os: macos-13, name: darwin-x64 }
           - { os: macos-14, name: darwin-arm64 }
           - { os: windows-2022, name: win32-x64 }
@@ -32,11 +32,23 @@ jobs:
           ref: v${{ needs.node-version.outputs.node-version }}
       - if: runner.os == 'Windows'
         uses: ilammy/setup-nasm@v1
+      - if: runner.os != 'Windows'
+        name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.7
+      - if: runner.os != 'Windows'
+        run: |
+          echo 'SCCACHE_GHA_ENABLED="true"' >> "$GITHUB_ENV"
+          echo 'CC="sccache cc"' >> "$GITHUB_ENV"
+          echo 'CXX="sccache c++"' >> "$GITHUB_ENV"
+      - if: runner.os == 'macOS'
+        run: |
+          mkdir -p ~/.local/bin
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo 'exec sysctl -n hw.logicalcpu' > ~/.local/bin/nproc
+          chmod +x ~/.local/bin/nproc
       - if: runner.os == 'Windows'
         run: ./vcbuild.bat dll
-      - if: runner.os == 'macOS'
-        run: ./configure --shared && make -j$(sysctl -n hw.logicalcpu)
-      - if: runner.os == 'Linux'
+      - if: runner.os != 'Windows'
         run: ./configure --shared && make -j$(nproc)
       - uses: actions/upload-artifact@v4
         with:
