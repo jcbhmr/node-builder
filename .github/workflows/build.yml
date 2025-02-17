@@ -6,21 +6,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  version:
+  node-version:
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      node-version: ${{ steps.version.outputs.node-version }}
+      node-version: ${{ steps.node-version.outputs.node-version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - id: version
+      - id: node-version
         run: |
-          version=$(cat VERSION)
-          node_version=$(echo "$version" | grep -Po '\d+\.\d+\.\d+')
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          node_version=$(cat VERSION | grep -Po '\d+\.\d+\.\d+')
           echo "node-version=$node_version" >> "$GITHUB_OUTPUT"
   build:
-    needs: version
+    needs: node-version
     strategy:
       fail-fast: true
       matrix:
@@ -35,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: nodejs/node
-          ref: v${{ needs.version.outputs.node-version }}
+          ref: v${{ needs.node-version.outputs.node-version }}
       - if: runner.os == 'Windows'
         run: ./vcbuild.bat dll
       - if: runner.os != 'Windows'
