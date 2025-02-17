@@ -35,7 +35,9 @@ jobs:
           ref: v${{ needs.node-version.outputs.node-version }}
       - if: runner.os == 'Windows'
         run: ./vcbuild.bat dll
-      - if: runner.os != 'Windows'
+      - if: runner.os == 'macOS'
+        run: ./configure --shared && make -j$(sysctl -n hw.logicalcpu)
+      - if: runner.os == 'Linux'
         run: ./configure --shared && make -j$(nproc)
       - uses: actions/upload-artifact@v4
         with:
